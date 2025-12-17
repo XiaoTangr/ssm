@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.javat.ssm.mapper.LikeRecordMapper">
+    
+    <resultMap id="LikeRecordResultMap" type="cn.javat.ssm.entity.LikeRecord">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="message_id" property="messageId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_canceled" property="isCanceled"/>
+    </resultMap>
+    
+    <sql id="table_columns">
+        id, user_id, message_id, create_time, is_canceled
+    </sql>
+    
+    <select id="selectByUserAndMessage" parameterType="map" resultMap="LikeRecordResultMap">
+        SELECT 
+        <include refid="table_columns"/>
+        FROM like_record
+        WHERE user_id = #{userId} AND message_id = #{messageId}
+    </select>
+    
+    <insert id="insert" parameterType="cn.javat.ssm.entity.LikeRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO like_record(user_id, message_id, create_time, is_canceled)
+        VALUES(#{userId}, #{messageId}, #{createTime}, #{isCanceled})
+    </insert>
+    
+    <update id="updateCanceled" parameterType="map">
+        UPDATE like_record SET is_canceled = #{isCanceled} WHERE id = #{id}
+    </update>
+    
+</mapper>
