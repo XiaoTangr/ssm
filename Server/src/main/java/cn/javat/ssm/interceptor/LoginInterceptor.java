@@ -1,6 +1,7 @@
 package cn.javat.ssm.interceptor;
 
 import cn.javat.ssm.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,30 @@ public class LoginInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        return true;
+
+        try {
+            String path = request.getServletPath();
+            if (EXCLUDE_PATHS.contains(path)) {
+                return true;
+            }
+            String token = request.getHeader("Authorization");
+            if (token == null || token.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "缺少Token");
+                return false;
+            }
+            Claims claims = jwtUtil.validateToken(token);
+            if (claims == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token验证失败");
+                return false;
+            }
+            response.setHeader("Authorization", jwtUtil.refreshToken(token));
+            return true;
+
+        } catch (Exception e) {
+//            发送服务器错误响应
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误");
+            return false;
+        }
     }
 
 }
