@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间必须与Mapper接口全类名一致 -->
 <mapper namespace="cn.javat.ssm.mapper.UserMapper">
-    
+
+    <!-- 结果集映射：数据库字段 → 实体类属性（解决下划线→驼峰映射） -->
     <resultMap id="UserResultMap" type="cn.javat.ssm.entity.User">
-        <id column="id" property="id"/>
+        <id column="id" property="id"/> <!-- 主键映射 -->
         <result column="email" property="email"/>
         <result column="nickname" property="nickname"/>
         <result column="password" property="password"/>
         <result column="role" property="role"/>
         <result column="status" property="status"/>
-        <result column="create_time" property="createTime"/>
+        <result column="create_time" property="createTime"/> <!-- 下划线转驼峰 -->
         <result column="is_deleted" property="isDeleted"/>
     </resultMap>
-    
-    <sql id="table_columns">
-        id, email, nickname, password, role, status, create_time, is_deleted
-    </sql>
-    
-    <select id="selectById" parameterType="long" resultMap="UserResultMap">
-        SELECT 
+
+    <!-- SQL片段：用户表字段（紧凑格式避免解析异常，反引号包裹关键字） -->
+    <sql id="table_columns">`id`, `email`, `nickname`, `password`, `role`, `status`, `create_time`, `is_deleted`</sql>
+
+    <!-- 根据ID查询用户（仅查询未删除的数据） -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="UserResultMap">
+        SELECT
         <include refid="table_columns"/>
-        FROM user
-        WHERE id = #{id} AND is_deleted = 0
+        FROM `user` <!-- 反引号包裹数据库关键字user -->
+        WHERE id = #{id} AND `is_deleted` = 0
     </select>
-    
-    <select id="selectByEmail" parameterType="string" resultMap="UserResultMap">
-        SELECT 
+
+    <!-- 根据邮箱查询用户（仅查询未删除的数据） -->
+    <select id="selectByEmail" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT
         <include refid="table_columns"/>
-        FROM user
-        WHERE email = #{email} AND is_deleted = 0
+        FROM `user`
+        WHERE `email` = #{email} AND `is_deleted` = 0
     </select>
-    
+
+    <!-- 新增用户（自动生成主键，指定keyProperty映射到实体类id） -->
     <insert id="insert" parameterType="cn.javat.ssm.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user(email, nickname, password, role, status, create_time, is_deleted)
-        VALUES(#{email}, #{nickname}, #{password}, #{role}, #{status}, #{createTime}, #{isDeleted})
+        INSERT INTO `user`(`email`, `nickname`, `password`, `role`, `status`, `create_time`, `is_deleted`)
+        VALUES (#{email}, #{nickname}, #{password}, #{role}, #{status}, #{createTime}, #{isDeleted})
     </insert>
-    
+
+    <!-- 更新用户（<set>标签自动剔除多余逗号，仅更新非空字段） -->
     <update id="update" parameterType="cn.javat.ssm.entity.User">
-        UPDATE user
+        UPDATE `user`
         <set>
-            <if test="email != null">email = #{email},</if>
-            <if test="nickname != null">nickname = #{nickname},</if>
-            <if test="password != null">password = #{password},</if>
-            <if test="role != null">role = #{role},</if>
-            <if test="status != null">status = #{status},</if>
-            <if test="createTime != null">create_time = #{createTime},</if>
-            <if test="isDeleted != null">is_deleted = #{isDeleted}</if>
+            <if test="email != null and email != ''">`email` = #{email},</if>
+            <if test="nickname != null and nickname != ''">`nickname` = #{nickname},</if>
+            <if test="password != null and password != ''">`password` = #{password},</if>
+            <if test="role != null">`role` = #{role},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="isDeleted != null">`is_deleted` = #{isDeleted}</if> <!-- 最后一个字段无逗号 -->
         </set>
-        WHERE id = #{id}
+        WHERE `id` = #{id} AND `is_deleted` = 0 <!-- 仅更新未删除的数据 -->
     </update>
-    
-    <update id="deleteById" parameterType="long">
-        UPDATE user SET is_deleted = 1 WHERE id = #{id}
+
+    <!-- 逻辑删除用户（更新is_deleted为1，而非物理删除） -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE `user`
+        SET `is_deleted` = 1
+        WHERE `id` = #{id} AND `is_deleted` = 0 <!-- 防止重复删除 -->
     </update>
-    
+
 </mapper>
