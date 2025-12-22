@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间必须与Mapper接口全类名一致 -->
+<mapper namespace="cn.javat.ssm.mapper.LikeRecordMapper">
+
+    <!-- 结果集映射：数据库字段 → 实体类属性（解决下划线→驼峰映射） -->
+    <resultMap id="LikeRecordResultMap" type="cn.javat.ssm.entity.LikeRecord">
+        <id column="id" property="id"/> <!-- 主键映射 -->
+        <result column="user_id" property="userId"/>
+        <result column="message_id" property="messageId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_canceled" property="isCanceled"/>
+    </resultMap>
+
+    <!-- SQL片段：点赞记录表字段（紧凑格式避免解析异常） -->
+    <sql id="table_columns">`id`, `user_id`, `message_id`, `create_time`, `is_canceled`</sql>
+
+    <!-- 根据ID查询点赞记录 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="LikeRecordResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `like_record`
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户ID和留言ID查询点赞记录 -->
+    <select id="selectByUserIdAndMessageId" resultMap="LikeRecordResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `like_record`
+        WHERE `user_id` = #{userId} AND `message_id` = #{messageId}
+    </select>
+
+    <!-- 根据用户ID和留言ID统计点赞记录数量 -->
+    <select id="countByUserIdAndMessageId" resultType="int">
+        SELECT COUNT(*) FROM `like_record`
+        WHERE `user_id` = #{userId} AND `message_id` = #{messageId}
+    </select>
+
+    <!-- 根据用户ID查询点赞记录列表 -->
+    <select id="selectListByUserId" parameterType="java.lang.Long" resultMap="LikeRecordResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `like_record`
+        WHERE `user_id` = #{userId}
+    </select>
+
+    <!-- 根据留言ID查询点赞记录列表 -->
+    <select id="selectListByMessageId" parameterType="java.lang.Long" resultMap="LikeRecordResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `like_record`
+        WHERE `message_id` = #{messageId}
+    </select>
+
+    <!-- 新增点赞记录（自动生成主键，指定keyProperty映射到实体类id） -->
+    <insert id="insert" parameterType="cn.javat.ssm.entity.LikeRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `like_record`(`user_id`, `message_id`, `create_time`, `is_canceled`)
+        VALUES (#{userId}, #{messageId}, #{createTime}, #{isCanceled})
+    </insert>
+
+    <!-- 更新点赞记录 -->
+    <update id="update" parameterType="cn.javat.ssm.entity.LikeRecord">
+        UPDATE `like_record`
+        <set>
+            <if test="userId != null">`user_id` = #{userId},</if>
+            <if test="messageId != null">`message_id` = #{messageId},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="isCanceled != null">`is_canceled` = #{isCanceled}</if>
+        </set>
+        WHERE `id` = #{id}
+    </update>
+
+    <!-- 删除点赞记录 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE
+        FROM `like_record`
+        WHERE `id` = #{id}
+    </delete>
+
+</mapper>

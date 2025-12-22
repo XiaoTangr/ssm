@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间必须与Mapper接口全类名一致 -->
+<mapper namespace="cn.javat.ssm.mapper.ReportMapper">
+
+    <!-- 结果集映射：数据库字段 → 实体类属性（解决下划线→驼峰映射） -->
+    <resultMap id="ReportResultMap" type="cn.javat.ssm.entity.Report">
+        <id column="id" property="id"/> <!-- 主键映射 -->
+        <result column="user_id" property="userId"/>
+        <result column="message_id" property="messageId"/>
+        <result column="reason" property="reason"/>
+        <result column="create_time" property="createTime"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="audit_user_id" property="auditUserId"/>
+        <result column="audit_time" property="auditTime"/>
+    </resultMap>
+
+    <!-- SQL片段：举报记录表字段（紧凑格式避免解析异常） -->
+    <sql id="table_columns">`id`, `user_id`, `message_id`, `reason`, `create_time`, `audit_status`, `audit_user_id`, `audit_time`</sql>
+
+    <!-- 根据ID查询举报记录 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="ReportResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `report`
+        WHERE id = #{id}
+    </select>
+
+    <!-- 分页查询举报记录列表 -->
+    <select id="selectList" resultMap="ReportResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `report`
+        WHERE 1=1
+        <if test="auditStatus != null and auditStatus != -1">
+            AND `audit_status` = #{auditStatus}
+        </if>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计举报记录总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM `report`
+        WHERE 1=1
+        <if test="auditStatus != null and auditStatus != -1">
+            AND `audit_status` = #{auditStatus}
+        </if>
+    </select>
+
+    <!-- 新增举报记录（自动生成主键，指定keyProperty映射到实体类id） -->
+    <insert id="insert" parameterType="cn.javat.ssm.entity.Report" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `report`(`user_id`, `message_id`, `reason`, `create_time`, `audit_status`, `audit_user_id`,
+                             `audit_time`)
+        VALUES (#{userId}, #{messageId}, #{reason}, #{createTime}, #{auditStatus}, #{auditUserId}, #{auditTime})
+    </insert>
+
+    <!-- 更新举报记录 -->
+    <update id="update" parameterType="cn.javat.ssm.entity.Report">
+        UPDATE `report`
+        <set>
+            <if test="userId != null">`user_id` = #{userId},</if>
+            <if test="messageId != null">`message_id` = #{messageId},</if>
+            <if test="reason != null and reason != ''">`reason` = #{reason},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="auditStatus != null">`audit_status` = #{auditStatus},</if>
+            <if test="auditUserId != null">`audit_user_id` = #{auditUserId},</if>
+            <if test="auditTime != null">`audit_time` = #{auditTime}</if>
+        </set>
+        WHERE `id` = #{id}
+    </update>
+
+</mapper>

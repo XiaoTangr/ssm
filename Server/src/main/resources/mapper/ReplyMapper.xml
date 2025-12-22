@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间必须与Mapper接口全类名一致 -->
+<mapper namespace="cn.javat.ssm.mapper.ReplyMapper">
+
+    <!-- 结果集映射：数据库字段 → 实体类属性（解决下划线→驼峰映射） -->
+    <resultMap id="ReplyResultMap" type="cn.javat.ssm.entity.Reply">
+        <id column="id" property="id"/> <!-- 主键映射 -->
+        <result column="message_id" property="messageId"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <!-- SQL片段：回复表字段（紧凑格式避免解析异常） -->
+    <sql id="table_columns">`id`, `message_id`, `creator_id`, `parent_id`, `content`, `create_time`, `is_deleted`</sql>
+
+    <!-- 根据ID查询回复（仅查询未删除的数据） -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="ReplyResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `reply`
+        WHERE id = #{id} AND `is_deleted` = 0
+    </select>
+
+    <!-- 根据留言ID查询回复列表 -->
+    <select id="selectListByMessageId" parameterType="java.lang.Long" resultMap="ReplyResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `reply`
+        WHERE `message_id` = #{messageId} AND `is_deleted` = 0
+        ORDER BY `create_time` ASC
+    </select>
+
+    <!-- 根据父ID查询回复列表 -->
+    <select id="selectListByParentId" parameterType="java.lang.Long" resultMap="ReplyResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `reply`
+        WHERE `parent_id` = #{parentId} AND `is_deleted` = 0
+    </select>
+
+    <!-- 分页查询回复列表 -->
+    <select id="selectList" resultMap="ReplyResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `reply`
+        WHERE `message_id` = #{messageId} AND `is_deleted` = 0
+        ORDER BY `create_time` ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计回复总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM `reply`
+        WHERE `message_id` = #{messageId} AND `is_deleted` = 0
+    </select>
+
+    <!-- 新增回复（自动生成主键，指定keyProperty映射到实体类id） -->
+    <insert id="insert" parameterType="cn.javat.ssm.entity.Reply" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `reply`(`message_id`, `creator_id`, `parent_id`, `content`, `create_time`, `is_deleted`)
+        VALUES (#{messageId}, #{creatorId}, #{parentId}, #{content}, #{createTime}, #{isDeleted})
+    </insert>
+
+    <!-- 逻辑删除回复（更新is_deleted为1，而非物理删除） -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE `reply`
+        SET `is_deleted` = 1
+        WHERE `id` = #{id}
+          AND `is_deleted` = 0
+    </update>
+
+</mapper>

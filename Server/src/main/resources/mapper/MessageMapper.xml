@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 命名空间必须与Mapper接口全类名一致 -->
+<mapper namespace="cn.javat.ssm.mapper.MessageMapper">
+
+    <!-- 结果集映射：数据库字段 → 实体类属性（解决下划线→驼峰映射） -->
+    <resultMap id="MessageResultMap" type="cn.javat.ssm.entity.Message">
+        <id column="id" property="id"/> <!-- 主键映射 -->
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <!-- SQL片段：留言表字段（紧凑格式避免解析异常） -->
+    <sql id="table_columns">`id`, `title`, `content`, `like_count`, `creator_id`, `create_time`, `update_time`, `status`, `is_deleted`</sql>
+
+    <!-- 根据ID查询留言（仅查询未删除的数据） -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE id = #{id} AND `is_deleted` = 0
+    </select>
+
+    <!-- 分页查询留言列表 -->
+    <select id="selectList" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="keyword != null and keyword != ''">
+            AND (`title` LIKE CONCAT('%', #{keyword}, '%') OR `content` LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据状态和创建时间倒序查询留言列表 -->
+    <select id="selectListByStatusOrderByCreateTimeDesc" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="status != null">
+            AND `status` = #{status}
+        </if>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据状态和点赞数、创建时间倒序查询留言列表 -->
+    <select id="selectListByStatusOrderByLikeCountAndCreateTimeDesc" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="status != null">
+            AND `status` = #{status}
+        </if>
+        ORDER BY `like_count` DESC, `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据关键词按创建时间倒序查询留言列表 -->
+    <select id="selectListByKeywordOrderByCreateTimeDesc" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `is_deleted` = 0
+          AND (`title` LIKE CONCAT('%', #{keyword}, '%') OR `content` LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据关键词按点赞数和创建时间倒序查询留言列表 -->
+    <select id="selectListByKeywordOrderByLikeCountAndCreateTimeDesc" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `is_deleted` = 0
+          AND (`title` LIKE CONCAT('%', #{keyword}, '%') OR `content` LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY `like_count` DESC, `create_time` DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据创建者ID查询留言列表 -->
+    <select id="selectListByCreatorId" parameterType="java.lang.Long" resultMap="MessageResultMap">
+        SELECT
+        <include refid="table_columns"/>
+        FROM `message`
+        WHERE `creator_id` = #{creatorId} AND `is_deleted` = 0
+        ORDER BY `create_time` DESC
+    </select>
+
+    <!-- 统计留言总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM `message`
+        WHERE `is_deleted` = 0
+    </select>
+
+    <!-- 根据状态统计留言总数 -->
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="status != null">
+            AND `status` = #{status}
+        </if>
+    </select>
+
+    <!-- 根据关键词统计留言总数 -->
+    <select id="countByKeyWord" resultType="int">
+        SELECT COUNT(*) FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="keyword != null and keyword != ''">
+            AND (`title` LIKE CONCAT('%', #{keyword}, '%') OR `content` LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <!-- 根据状态和关键词统计留言总数 -->
+    <select id="countByStatusAndKeyWord" resultType="int">
+        SELECT COUNT(*) FROM `message`
+        WHERE `is_deleted` = 0
+        <if test="status != null">
+            AND `status` = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (`title` LIKE CONCAT('%', #{keyword}, '%') OR `content` LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <!-- 新增留言（自动生成主键，指定keyProperty映射到实体类id） -->
+    <insert id="insert" parameterType="cn.javat.ssm.entity.Message" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `message`(`title`, `content`, `like_count`, `creator_id`, `create_time`, `update_time`, `status`, `is_deleted`)
+        VALUES (#{title}, #{content}, #{likeCount}, #{creatorId}, #{createTime}, #{updateTime}, #{status}, #{isDeleted})
+    </insert>
+
+    <!-- 更新留言（<set>标签自动剔除多余逗号，仅更新非空字段） -->
+    <update id="update" parameterType="cn.javat.ssm.entity.Message">
+        UPDATE `message`
+        <set>
+            <if test="title != null and title != ''">`title` = #{title},</if>
+            <if test="content != null and content != ''">`content` = #{content},</if>
+            <if test="likeCount != null">`like_count` = #{likeCount},</if>
+            <if test="creatorId != null">`creator_id` = #{creatorId},</if>
+            <if test="createTime != null">`create_time` = #{createTime},</if>
+            <if test="updateTime != null">`update_time` = #{updateTime},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="isDeleted != null">`is_deleted` = #{isDeleted}</if>
+        </set>
+        WHERE `id` = #{id} AND `is_deleted` = 0
+    </update>
+
+    <!-- 更新留言状态 -->
+    <update id="updateStatus">
+        UPDATE `message`
+        SET `status` = #{status}, `update_time` = #{updateTime}
+        WHERE `id` = #{id} AND `is_deleted` = 0
+    </update>
+
+    <!-- 逻辑删除留言（更新is_deleted为1，而非物理删除） -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE `message`
+        SET `is_deleted` = 1
+        WHERE `id` = #{id} AND `is_deleted` = 0
+    </update>
+
+</mapper>

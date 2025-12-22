@@ -1,0 +1,64 @@
+// SCSS Variables
+
+// Color Palette
+$primary-color: #409eff !default;
+$success-color: #67c23a !default;
+$warning-color: #e6a23c !default;
+$error-color: #f56c6c !default;
+$info-color: #909399 !default;
+
+// Text Colors
+$text-primary: #303133 !default;
+$text-regular: #606266 !default;
+$text-secondary: #909399 !default;
+$text-placeholder: #a8abb2 !default;
+$text-disabled: #c0c4cc !default;
+
+// Border Colors
+$border-color-base: #dcdfe6 !default;
+$border-color-light: #e4e7ed !default;
+$border-color-lighter: #ebeef5 !default;
+$border-color-extra-light: #f2f6fc !default;
+
+// Background Colors
+$background-color-base: #f5f7fa !default;
+$background-color-light: #fafafa !default;
+$background-color-white: #ffffff !default;
+
+// Font Sizes
+$font-size-extra-large: 20px !default;
+$font-size-large: 18px !default;
+$font-size-medium: 16px !default;
+$font-size-base: 14px !default;
+$font-size-small: 13px !default;
+$font-size-extra-small: 12px !default;
+
+// Font Weights
+$font-weight-primary: 500 !default;
+$font-weight-secondary: 100 !default;
+
+// Border Radius
+$border-radius-base: 4px !default;
+$border-radius-small: 2px !default;
+$border-radius-round: 20px !default;
+$border-radius-circle: 100% !default;
+
+// Spacing
+$spacing-extra-tight: 4px !default;
+$spacing-tight: 8px !default;
+$spacing-base: 12px !default;
+$spacing-loose: 16px !default;
+$spacing-extra-loose: 20px !default;
+
+// Box Shadow
+$box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04) !default;
+$box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.12) !default;
+$box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1) !default;
+
+// Breakpoints
+$breakpoint-xs: 480px !default;
+$breakpoint-sm: 576px !default;
+$breakpoint-md: 768px !default;
+$breakpoint-lg: 992px !default;
+$breakpoint-xl: 1200px !default;
+$breakpoint-xxl: 1600px !default;
