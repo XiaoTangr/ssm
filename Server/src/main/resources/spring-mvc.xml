@@ -13,14 +13,14 @@
 
     <!-- 扫描 Interceptor 拦截器层 -->
     <context:component-scan base-package="cn.javat.ssm.interceptor"/>
-    
+
     <!-- 扫描 Util 工具类组件 -->
     <context:component-scan base-package="cn.javat.ssm.util"/>
 
     <!-- 配置拦截器 -->
     <mvc:interceptors>
         <!-- 登录拦截器 -->
-        <bean class="cn.javat.ssm.interceptor.LoginInterceptor"/>
+        <bean class="cn.javat.ssm.interceptor.AuthInterceptor"/>
     </mvc:interceptors>
 
 

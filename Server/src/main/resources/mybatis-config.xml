@@ -3,9 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <!-- MyBatis配置 -->
-    
-    <!-- 配置别名 -->
+    <!-- 配置类型别名（简化Mapper.xml中的类名） -->
     <typeAliases>
         <package name="cn.javat.ssm.entity"/>
     </typeAliases>

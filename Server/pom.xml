@@ -16,13 +16,19 @@
             <artifactId>spring-context</artifactId>
             <version>6.2.7</version>
         </dependency>
-
+        <!-- Spring Security 6.2.7 核心依赖（匹配Spring 6.2.7） -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>6.5.4</version>
+        </dependency>
         <!-- Spring Web MVC -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>6.2.10</version>
         </dependency>
+
 
         <!-- Spring JDBC -->
         <dependency>
@@ -50,7 +56,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.3</version>
         </dependency>
 
         <!-- 数据源 -->
@@ -62,9 +68,9 @@
 
         <!-- MySQL驱动 -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.3.0</version>
         </dependency>
 
         <!-- Servlet API -->
@@ -79,7 +85,7 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>2.1.1</version>
+            <version>3.0.0-M1</version>
         </dependency>
 
         <!-- Jackson 数据绑定 -->
@@ -132,6 +138,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <!-- 源码级别和目标级别都设为 17（或 14+/11+，推荐 17） -->
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <!-- 编码格式（避免中文乱码） -->
+                    <encoding>UTF-8</encoding>
+                    <!-- 移除废弃的 compilerVersion 参数（消除警告） -->
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>

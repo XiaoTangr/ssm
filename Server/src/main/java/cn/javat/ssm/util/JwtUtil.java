@@ -59,7 +59,14 @@ public class JwtUtil {
      * @return Claims对象
      */
     public Claims validateToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token).getBody();
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.replace("Bearer ", "");
+            }
+            return Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

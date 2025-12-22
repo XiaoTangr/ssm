@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>javat</w>
+      <w>通过token获取用户信息</w>
     </words>
   </dictionary>
 </component>

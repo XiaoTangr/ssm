@@ -1,15 +1,19 @@
 package cn.javat.ssm.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 用户实体类
  * 对应数据库中的user表
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-    // Getters and Setters
+
     /**
      * 用户唯一ID
      */
@@ -28,6 +32,7 @@ public class User {
     /**
      * 密码（建议MD5/BCrypt加密存储）
      */
+    @JsonIgnore
     private String password;
 
     /**
@@ -50,35 +55,4 @@ public class User {
      */
     private Integer isDeleted;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setRole(Integer role) {
-        this.role = role;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-
-    public void setIsDeleted(Integer isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 }

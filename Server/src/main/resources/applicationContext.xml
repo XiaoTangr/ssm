@@ -10,11 +10,19 @@
                            http://www.springframework.org/schema/tx
                            http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <!-- 1. 扫描 Service 层组件 -->
-    <context:component-scan base-package="cn.javat.ssm.service"/>
-    
-    <!-- 2. 扫描 Util 工具类组件 -->
-    <context:component-scan base-package="cn.javat.ssm.util"/>
+    <!-- 1. 开启注解扫描（Spring 6.x建议指定use-default-filters="true"） -->
+    <context:component-scan base-package="cn.javat.ssm" use-default-filters="true"/>
+
+    <!-- 2. 注册BCrypt密码加密器（Spring 6.x兼容该类） -->
+    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+        <!-- 加密强度（6.x版本仍支持10作为默认值，范围4-31） -->
+        <constructor-arg value="10"/>
+    </bean>
+
+    <!-- 3. 注册密码加密工具类 -->
+    <bean id="passwordEncryptUtil" class="cn.javat.ssm.util.PasswordEncryptUtil">
+        <constructor-arg ref="passwordEncoder"/>
+    </bean>
 
     <!-- 3. 加载配置文件 -->
     <context:property-placeholder location="classpath:jdbc.properties"/>
@@ -27,18 +35,21 @@
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
-    <!-- 5. 配置 SqlSessionFactory -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 注入数据源 -->
         <property name="dataSource" ref="dataSource"/>
+        <!-- 可选：配置MyBatis全局配置文件 -->
         <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 可选：配置Mapper.xml文件的扫描路径（如果用XML写SQL） -->
         <property name="mapperLocations" value="classpath:mapper/*.xml"/>
     </bean>
 
-    <!-- 6. 扫描 Mapper 接口 -->
+    <!-- 4. 配置Mapper扫描器（自动创建Mapper接口的实现类，注入Spring容器） -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="cn.javat.ssm.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
+
 
     <!-- 7. 配置事务管理器 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
