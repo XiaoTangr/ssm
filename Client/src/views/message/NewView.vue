@@ -1,6 +1,6 @@
 <template>
     <div>
-        new
+        new view
     </div>
 </template>
 

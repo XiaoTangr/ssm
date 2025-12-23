@@ -75,7 +75,7 @@ public class HttpBody {
     public String toString() {
 //        使用Jackson序列化为JSON，没有JsonUtil
         ObjectMapper objectMapper = new ObjectMapper();
-        try {
+         try {
             return objectMapper.writeValueAsString(this);
         } catch (Exception e) {
             return null;

@@ -20,10 +20,9 @@
                         <template #footer>
                             <div class="message-item-footer">
                                 <div class="star-num">
-                                    <el-icon>
-                                        <StarsIcon />
-                                    </el-icon>
-                                    <span class="star-num">{{ item.likeCount }}</span>
+                                    <el-text v-if="item.likeCount && item.likeCount > 0">
+                                        共 {{ item.likeCount }} 人点赞
+                                    </el-text>
                                 </div>
                                 <el-button type="primary" @click="toDetailHandler(item.id)"
                                     :disabled="item.id === null">查看详情</el-button>
@@ -54,7 +53,7 @@
             </div>
             <div class="pagination-container">
                 <div class="pagination">
-                    <el-pagination class="pagination" @current-change="paginationChangHandler"
+                    <el-pagination class="pagination" @change="paginationChangHandler"
                         v-model:current-page="pageNum" v-model:page-size="pageSize" :page-sizes="[5, 10, 20, 50, 100]"
                         layout=" prev, pager, next,total,sizes" :total="messageTotal" />
                 </div>
@@ -65,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import StarsIcon from '@/components/icon/StrasIcon.vue'
+import HeartIcon from '@/components/icon/HeartIcon.vue';
 import type { Message } from '@/core/entity/dbEntities';
 import { get } from '@/core/util';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
@@ -106,7 +105,6 @@ const fetchMessageList = async () => {
 
 
 const searchChangeHandler = async () => {
-
     // 字符串需要处理编码
     const str = encodeURIComponent(searchContent.value ?? '');
 
@@ -218,7 +216,6 @@ const logoutHandler = () => {
 
 
                     .message-item-footer {
-
                         width: 100%;
                         // 两端对齐
                         justify-content: space-between;

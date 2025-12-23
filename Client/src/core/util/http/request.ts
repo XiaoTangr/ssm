@@ -52,7 +52,7 @@ class HttpRequest {
                         localStorage.removeItem('token')
                         return Promise.reject(new Error('请先登录!'))
                     }
-                    config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
+                    config.headers.Authorization = `${localStorage.getItem('token')}`
                 }
 
 
