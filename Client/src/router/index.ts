@@ -12,19 +12,34 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue')
     },
     {
-      path: '/login',
+      path: '/admin',
+      name: '/admin',
+      component: () => import('@/views/AdminView.vue')
+    },
+    {
+      path: '/user/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue')
+      component: () => import('@/views/user/LoginView.vue')
     },
     {
-      path: '/register',
+      path: '/user/register',
       name: 'register',
-      component: () => import('@/views/RegisterView.vue')
+      component: () => import('@/views/user/RegisterView.vue')
     },
     {
-      path: '/message/new',
-      name: 'message-new',
+      path: '/user/reset',
+      name: 'reset',
+      component: () => import('@/views/user/ResetView.vue')
+    },
+    {
+      path: '/create',
+      name: 'message-create',
       component: () => import('@/views/message/NewView.vue')
+    },
+    {
+      path: '/update/:id',
+      name: 'message-update',
+      component: () => import('@/views/message/UpdateView.vue')
     },
     {
       path: '/message/:id',
@@ -38,7 +53,7 @@ const router = createRouter({
 // 需要确保Store加载完成
 router.beforeEach(async (to, from, next) => {
   // 如果是登录页面或注册页面，直接放行
-  if (to.name === 'login' || to.name === 'register') {
+  if (to.name === 'login' || to.name === 'register' || to.name === 'reset') {
     next()
     return;
   }

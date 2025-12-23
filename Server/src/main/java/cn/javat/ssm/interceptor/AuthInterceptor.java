@@ -35,6 +35,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         EXCLUDE_PATHS.add("/api/users/register");
         EXCLUDE_PATHS.add("/api/users/login");
         EXCLUDE_PATHS.add("/api/messages");
+        EXCLUDE_PATHS.add("/api/users/reset");
         
         // 前缀匹配的免登录路径
         EXCLUDE_PREFIXES.add("/api/messages/");

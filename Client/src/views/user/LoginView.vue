@@ -2,7 +2,7 @@
     <div class="container">
         <el-card>
             <template #header>
-                <h2>绵城留言墙</h2>
+                <h2>绵城留言墙-登录</h2>
             </template>
             <template #default>
                 <div class="card">
@@ -25,8 +25,9 @@
                                 </el-input>
                             </el-form-item>
                             <div class="buttons">
+                                <el-button class="button" type="success" @click="registerHandler()">注 册</el-button>
+                                <el-button class="button" @click="resetHandler()">重置密码</el-button>
                                 <el-button class="button" type="primary" @click="loginHandler()">登 录</el-button>
-                                <el-button class="button" @click="registerHandler()">注 册</el-button>
                             </div>
 
                         </el-form>
@@ -71,9 +72,11 @@ const loginHandler = async () => {
     });
 }
 const registerHandler = () => {
-    router.push('/register');
+    router.push('/user/register');
 }
-
+const resetHandler = () => {
+    router.push('/user/reset');
+}
 </script>
 
 <style scoped lang="scss">

@@ -143,4 +143,40 @@ public class UserController {
         }
         return ResponseEntity.ok(HttpBody.ok().data(user.getData()));
     }
+
+
+    @PostMapping("/reset")
+    public ResponseEntity<HttpBody> resetPassword(@RequestBody Map<String, Object> params) {
+        String nickName = (String) params.get("nickName");
+        String email = (String) params.get("email");
+        String password = (String) params.get("password");
+        String confirmPassword = (String) params.get("confirmPassword");
+
+        if (nickName == null || nickName.isEmpty()) {
+            return ResponseEntity.ok(HttpBody.bad().msg("昵称不能为空"));
+        }
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.ok(HttpBody.bad().msg("邮箱不能为空"));
+        }
+        if (password == null || password.isEmpty()) {
+            return ResponseEntity.ok(HttpBody.bad().msg("密码不能为空"));
+        }
+        if (confirmPassword == null || confirmPassword.isEmpty()) {
+            return ResponseEntity.ok(HttpBody.bad().msg("确认密码不能为空"));
+        }
+        if (!password.equals(confirmPassword)) {
+            return ResponseEntity.ok(HttpBody.bad().msg("密码不一致"));
+        }
+        ServiceResult<User> result = userService.resetPassword(email, nickName, password);
+
+        if (!result.isSuccess()) {
+            return switch (result.getCode()) {
+                case -1 -> ResponseEntity.ok(HttpBody.bad().msg("邮箱或昵称错误"));
+                case -2 -> ResponseEntity.ok(HttpBody.bad().msg("用户不存在"));
+                case -3 -> ResponseEntity.ok(HttpBody.bad().msg("服务器内部错误"));
+                default -> ResponseEntity.ok(HttpBody.bad().msg("重置密码失败"));
+            };
+        }
+        return ResponseEntity.ok(HttpBody.ok().data(result.getData()));
+    }
 }

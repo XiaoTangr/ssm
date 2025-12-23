@@ -1,16 +1,16 @@
 <template>
     <div class="container">
         <div class="header">
-            <el-page-header @back="cancelCreateHandler">
+            <el-page-header @back="cancelUpdateHandler">
                 <template #content>
-                    新建留言
+                    更新留言
                 </template>
             </el-page-header>
         </div>
         <div class="inner-container">
             <el-card>
                 <template #header>
-                    发布新留言
+                    更新留言
                 </template>
                 <template #default>
                     <el-form :model="createForm">
@@ -23,8 +23,8 @@
                     </el-form>
                 </template>
                 <template #footer>
-                    <el-button type="primary" @click="confirmCreateHandler">发布</el-button>
-                    <el-button @click="cancelCreateHandler">取消</el-button>
+                    <el-button type="primary" @click="confirmUpdateHandler">发布</el-button>
+                    <el-button @click="cancelUpdateHandler">取消</el-button>
                 </template>
             </el-card>
         </div>
@@ -32,37 +32,49 @@
 </template>
 
 <script setup lang="ts">
-import { post } from '@/core/util';
+import type { Message } from '@/core/entity/dbEntities';
+import { get, post, put } from '@/core/util';
 import { ElMessageBox, ElNotification } from 'element-plus';
-import { reactive } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const createForm = reactive({
+// 定义表单数据类型，title和content可为null，与Message接口保持一致
+interface CreateForm {
+    title: string | null;
+    content: string | null;
+}
+
+const createForm = reactive<CreateForm>({
     title: '',
     content: '',
 })
 
-const router = useRouter()
-// 发布留言
-const confirmCreateHandler = () => {
-    if (createForm.title.trim() === '' || createForm.content.trim() === '') {
-        ElNotification.error({
-            title: '错误',
-            message: '请填写标题和内容',
-            duration: 2000,
-        })
-        return
-    }
+const router = useRouter();
+const messageId = ref<number | null>(null)
+onMounted(async () => {
+    messageId.value = Number(router.currentRoute.value.params.id)
+    await fetchMessageDetail();
+})
 
-    ElMessageBox.confirm('确定发布么？', '提示', {
+const fetchMessageDetail = async () => {
+    await get<Message>(`/api/messages/${messageId.value}`).then(res => {
+        createForm.title = res.data.title
+        createForm.content = res.data.content
+    })
+}
+
+
+// 发布留言
+const confirmUpdateHandler = () => {
+    ElMessageBox.confirm('确定更新么？', '提示', {
     }).then(async () => {
         const title = createForm.title
         const content = createForm.content
-        await post('/api/messages', { title, content }).then(() => {
+        await put(`/api/messages/${messageId.value}`, { title, content }).then(() => {
         }).then(() => {
             ElNotification.success({
                 title: '成功',
-                message: '发布成功！',
+                message: '更新成功！',
                 duration: 2000,
             })
             router.back()
@@ -71,7 +83,7 @@ const confirmCreateHandler = () => {
         }).catch(() => {
             ElNotification.error({
                 title: '错误',
-                message: '发布失败！',
+                message: '更新失败！',
                 duration: 2000,
             })
         })
@@ -84,23 +96,17 @@ const confirmCreateHandler = () => {
     })
 }
 // 取消发布
-const cancelCreateHandler = () => {
+const cancelUpdateHandler = () => {
     // 判断表单是否有内容
-    if (createForm.title.trim() !== '' || createForm.content.trim() !== '') {
-        ElMessageBox.confirm('确定关闭么？未提交内容将丢失！', '提示', {
-        }).then(() => {
-            router.back();
-            createForm.title = ''
-            createForm.content = ''
-            return;
-        }).catch(() => {
-            return
-        })
-    } else {
-        router.back()
+    ElMessageBox.confirm('确定关闭么？未提交内容将丢失！', '提示', {
+    }).then(() => {
+        router.back();
         createForm.title = ''
         createForm.content = ''
-    }
+        return;
+    }).catch(() => {
+        return
+    })
 }
 </script>
 

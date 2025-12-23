@@ -35,6 +35,8 @@
                             <el-button class="btn" :icon="ChatDotRound" @click="replyHandler(null)" circle />
                             <el-button plain class="btn" :icon="Warning" @click="reportFormVisible = true" circle
                                 type="warning" />
+                            <el-button @click="updateHandler()" plain class="btn"
+                                v-if="messageData?.creatorId == currentUser?.id" type="primary" :icon="Edit" circle />
                             <el-button plain class="btn" v-if="messageData?.creatorId === currentUser?.id" type="danger"
                                 :icon="Delete" circle />
                         </div>
@@ -57,9 +59,9 @@
                                 {{ (data as Reply).content }}
                             </el-scrollbar>
                             <div class="replay-item operation">
-
                                 <el-button plain class="btn" :icon="ChatDotRound" circle
                                     @click="replyHandler(data.id)" />
+
                                 <el-button @click="delReplayHandler(data.id)" plain class="btn"
                                     v-if="data.creatorId == currentUser?.id" type="danger" :icon="Delete" circle />
                             </div>
@@ -109,7 +111,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import { ElDialog, ElMention, ElMessageBox, ElNotification, type TreeNodeData } from 'element-plus'
-import { ChatDotRound, Delete, Warning } from '@element-plus/icons-vue';
+import { ChatDotRound, Delete, Edit, Warning } from '@element-plus/icons-vue';
 import RedHeartIcon from '@/components/icon/RedHeartIcon.vue';
 import HeartIcon from '@/components/icon/HeartIcon.vue';
 const router = useRouter()
@@ -204,11 +206,11 @@ const goBackHandler = () => {
 }
 
 
+// ------------------------更新功能---------------------------------
 
-
-
-
-
+const updateHandler = () => {
+    router.push(`/update/${messageID.value}`);
+}
 
 // ------------------------获取数据---------------------------------
 

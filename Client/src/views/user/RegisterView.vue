@@ -2,7 +2,7 @@
     <div class="container">
         <el-card>
             <template #header>
-                <h2>绵城留言墙</h2>
+                <h2>绵城留言墙-注册</h2>
             </template>
             <template #default>
                 <div class="card">
@@ -99,7 +99,7 @@ const registerHandler = async () => {
 }
 
 const loginHandler = () => {
-    router.push('/login');
+    router.push('/user/login');
 }
 </script>
 

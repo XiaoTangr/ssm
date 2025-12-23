@@ -121,4 +121,28 @@ public class UserServiceImpl implements UserService {
         }
         return result;
     }
+
+    /**
+     *
+     * @param email    邮箱
+     * @param nickName 昵称
+     * @param password 密码
+     * @return User 获取成功 -1 信息不匹配 -2 用户不存在 -3 修改失败
+     */
+    @Override
+    public ServiceResult<User> resetPassword(String email, String nickName, String password) {
+        User user = userMapper.selectByEmail(email);
+        if (user == null) {
+            return ServiceResult.error(-2);
+        }
+        if (!user.getNickname().equals(nickName)) {
+            return ServiceResult.error(-1);
+        }
+        password = passwordEncryptUtil.encryptPassword(password);
+        user.setPassword(password);
+        if (userMapper.update(user) > 0) {
+            return ServiceResult.ok(user);
+        }
+        return ServiceResult.error(-3);
+    }
 }

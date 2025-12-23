@@ -1,4 +1,4 @@
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { User } from '@/core/entity/dbEntities'
 import { get, post } from '@/core/util/http/request'
@@ -72,8 +72,5 @@ export const useCurrentUserStore = defineStore('currentUserStore', () => {
   }
 
 
-  onMounted(async () => {
-    await fetchData();
-  });
   return { currentUser, isLogined, userRole, userStatus, fetchData, logout, login }
 })

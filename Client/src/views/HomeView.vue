@@ -4,6 +4,8 @@
             <div class="search-container">
                 <el-input class="search" @change="searchChangeHandler" placeholder="请输入内容" :suffix-icon="Search"
                     v-model="searchContent"></el-input>
+                <el-button @click="createMessageHandler()" style="margin-left: 1rem" type="primary"
+                    round>发布留言</el-button>
             </div>
             <div class="main-container">
                 <div class="list-container">
@@ -19,11 +21,9 @@
                         </template>
                         <template #footer>
                             <div class="message-item-footer">
-                                <div class="star-num">
-                                    <el-text v-if="item.likeCount && item.likeCount > 0">
-                                        共 {{ item.likeCount }} 人点赞
-                                    </el-text>
-                                </div>
+                                <el-text class="star-num">
+                                    共 {{ item.likeCount }} 人点赞
+                                </el-text>
                                 <el-button type="primary" @click="toDetailHandler(item.id)"
                                     :disabled="item.id === null">查看详情</el-button>
                             </div>
@@ -43,18 +43,18 @@
                         </template>
                         <template #footer>
                             <div class="userinfo-footer">
-                                <el-button type="primary" @click="logoutHandler()">更新信息</el-button>
+                                <el-button v-if="currentUser?.role && currentUser?.role > 0" type="primary"
+                                    @click="adminHandler()">管理面板</el-button>
                                 <el-button type="danger" @click="logoutHandler()">退出登录</el-button>
                             </div>
                         </template>
                     </el-card>
                 </div>
-
             </div>
             <div class="pagination-container">
                 <div class="pagination">
-                    <el-pagination class="pagination" @change="paginationChangHandler"
-                        v-model:current-page="pageNum" v-model:page-size="pageSize" :page-sizes="[5, 10, 20, 50, 100]"
+                    <el-pagination class="pagination" @change="paginationChangHandler" v-model:current-page="pageNum"
+                        v-model:page-size="pageSize" :page-sizes="[5, 10, 20, 50, 100]"
                         layout=" prev, pager, next,total,sizes" :total="messageTotal" />
                 </div>
             </div>
@@ -68,7 +68,7 @@ import HeartIcon from '@/components/icon/HeartIcon.vue';
 import type { Message } from '@/core/entity/dbEntities';
 import { get } from '@/core/util';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
-import { Search } from '@element-plus/icons-vue';
+import { Edit, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
@@ -130,23 +130,30 @@ const toDetailHandler = (id: number | null) => {
 };
 
 
+
+
 onMounted(async () => {
     await fetchMessageList();
+    await currentUserStore.fetchData();
 })
-
-
 
 const router = useRouter();
 const logoutHandler = () => {
     currentUserStore.logout();
     ElMessage.success('退出登录成功');
-    router.push('/login');
+    router.push('/user/login');
 };
 
+const adminHandler = () => {
+    router.push('/admin');
+}
+const createMessageHandler = () => {
+    router.push('/create');
+}
 </script>
 
 <style scoped lang="scss">
-@import '@/core/styles/variable.scss';
+@use '@/core/styles/variable.scss' as *;
 
 .container {
     display: flex;

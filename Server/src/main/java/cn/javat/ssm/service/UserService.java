@@ -43,4 +43,6 @@ public interface UserService {
     ServiceResult<User> getUserByEmail(String email);
 
     ServiceResult<User> getUserByToken(String token);
+
+    ServiceResult<User> resetPassword(String email, String nickName, String password);
 }
