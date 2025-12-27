@@ -33,7 +33,7 @@ public class ReportServiceImpl implements ReportService {
         if (message == null) {
             return ServiceResult.error(404);
         }
-        
+
         // 创建举报记录
         Report report = new Report();
         report.setUserId(user.getId());
@@ -43,7 +43,7 @@ public class ReportServiceImpl implements ReportService {
         report.setAuditStatus(0); // 待审核
         report.setAuditUserId(null);
         report.setAuditTime(null);
-        
+
         if (reportMapper.insert(report) > 0) {
             return ServiceResult.ok(report.getId());
         }
@@ -56,22 +56,22 @@ public class ReportServiceImpl implements ReportService {
         if (user.getRole() != 1) {
             return ServiceResult.error(403);
         }
-        
+
         Map<String, Object> result = new HashMap<>();
-        
+
         // 计算偏移量
         int offset = (pageNum - 1) * pageSize;
-        
+
         // 查询举报列表
         List<Report> list = reportMapper.selectList(auditStatus, offset, pageSize);
-        
+
         // 统计总数
         int total = reportMapper.count(auditStatus);
-        
+
         // 构造返回结果
         result.put("total", total);
         result.put("list", list);
-        
+
         return ServiceResult.ok(result);
     }
 
@@ -81,18 +81,18 @@ public class ReportServiceImpl implements ReportService {
         if (user.getRole() != 1) {
             return ServiceResult.error(403);
         }
-        
+
         // 查询举报记录
         Report report = reportMapper.selectById(reportId);
         if (report == null) {
             return ServiceResult.error(404);
         }
-        
+
         // 更新举报记录
         report.setAuditStatus(auditStatus);
         report.setAuditUserId(user.getId());
         report.setAuditTime(System.currentTimeMillis());
-        
+
         if (reportMapper.update(report) > 0) {
             // 如果审核通过，更新留言状态为违规
             if (auditStatus == 1) { // 审核通过

@@ -9,9 +9,8 @@
                            http://www.springframework.org/schema/context/spring-context.xsd
                            http://www.springframework.org/schema/tx
                            http://www.springframework.org/schema/tx/spring-tx.xsd">
-
-    <!-- 1. 开启注解扫描（Spring 6.x建议指定use-default-filters="true"） -->
-    <context:component-scan base-package="cn.javat.ssm" use-default-filters="true"/>
+    <!--由Spring mvc 注册组件-->
+    <!--    <context:component-scan base-package="cn.javat.ssm"/>-->
 
     <!-- 2. 注册BCrypt密码加密器（Spring 6.x兼容该类） -->
     <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
@@ -49,7 +48,6 @@
         <property name="basePackage" value="cn.javat.ssm.mapper"/>
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
     </bean>
-
 
     <!-- 7. 配置事务管理器 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

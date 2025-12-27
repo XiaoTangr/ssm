@@ -10,7 +10,16 @@
         <div class="inner-container">
             <el-card class="message-card">
                 <template #header>
-                    <div class="title">{{ messageData?.title }}</div>
+                    <div style="display: flex; justify-content: space-between;align-items: center;">
+                        <div>
+                            <h2>{{ messageData?.title }}</h2>
+                            <el-text>发布者：{{ messageData?.creatorId }} </el-text>
+                        </div>
+                        <div>
+                            <el-text> 发布于 {{ formatDateTime(messageData?.createTime ?? 0) }}</el-text><br>
+                            <el-text> 更新于 {{ formatDateTime(messageData?.updateTime ?? 0) }}</el-text>
+                        </div>
+                    </div>
                 </template>
                 <template #default>
                     <!-- 显示留言内容 -->
@@ -37,8 +46,9 @@
                                 type="warning" />
                             <el-button @click="updateHandler()" plain class="btn"
                                 v-if="messageData?.creatorId == currentUser?.id" type="primary" :icon="Edit" circle />
-                            <el-button plain class="btn" v-if="messageData?.creatorId === currentUser?.id" type="danger"
-                                :icon="Delete" circle />
+                            <el-button @click='delMessageHandler' plain class="btn"
+                                v-if="messageData?.creatorId === currentUser?.id || currentUser?.role == 1"
+                                type="danger" :icon="Delete" circle />
                         </div>
                     </div>
                 </template>
@@ -105,7 +115,7 @@
 <script setup lang="ts">
 
 import type { Message, Reply } from '@/core/entity/dbEntities';
-import { del, get, post } from '@/core/util';
+import { del, formatDateTime, get, post } from '@/core/util';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, reactive, ref } from 'vue'
@@ -125,11 +135,6 @@ const messageData = ref<Message>();
 // 回复数据
 const replyTotal = ref(0);
 const replyData = ref<Reply[]>();
-
-
-
-
-
 
 const treeNodeClass = (({ }: TreeNodeData) => {
     const classArray: string[] = [];
@@ -194,11 +199,13 @@ const currentUserStore = useCurrentUserStore()
 const { currentUser } = storeToRefs(currentUserStore)
 
 
-onMounted(() => {
+onMounted(async () => {
     messageID.value = route.params.id
-    fetchMessageDetail();
-    fetchReplyDetail();
-    fetchLikeRecord();
+    await fetchMessageDetail().then(async () => {
+        await fetchReplyDetail();
+        await fetchLikeRecord();
+    });
+
 })
 // 返回
 const goBackHandler = () => {
@@ -225,7 +232,16 @@ async function fetchLikeRecord() {
 // 获取留言详情
 const fetchMessageDetail = async () => {
     await get<Message>(`/api/messages/${messageID.value}`).then(res => {
-        messageData.value = res.data
+        // 检查留言是否存在
+        messageData.value = res.data;
+
+    }).catch(async () => {
+        ElMessageBox.alert('此留言不存在！', '提示', {
+            confirmButtonText: '返回',
+            type: 'warning',
+        }).finally(() => {
+            goBackHandler();
+        });
     })
 }
 // 获取回复列表
@@ -251,7 +267,22 @@ const toggleLikeHandler = async () => {
     })
 }
 // ------------------------删除文章相关---------------------------------
-
+const delMessageHandler = () => {
+    ElMessageBox.confirm('确定删除此留言么？删除后，此留言将无法恢复！', '提示', {
+    }).then(async () => {
+        await del(`/api/messages/${messageID.value}`).then(async () => {
+            ElNotification.success({
+                title: '成功',
+            })
+            router.push('/')
+        })
+    }).catch(() => {
+        ElNotification.warning({
+            title: '提示',
+            message: '操作取消！'
+        })
+    })
+}
 
 
 // ------------------------删除回复相关---------------------------------
@@ -264,6 +295,16 @@ const delReplayHandler = (id: number) => {
                 title: '成功',
             })
             await fetchReplyDetail();
+        }).catch(() => {
+            ElNotification.error({
+                title: '错误',
+                message: '删除失败！'
+            })
+        })
+    }).catch(() => {
+        ElNotification.warning({
+            title: '提示',
+            message: '操作取消！'
         })
     })
 }
@@ -282,7 +323,6 @@ const confirmReportHandler = () => {
     if (reportForm.reason.trim() !== '') {
         ElMessageBox.confirm('确定举报么？举报后，管理员将处理！', '提示', {
         }).then(async () => {
-
             await post('/api/reports', { messageId, reason }).then(() => {
                 ElNotification.success({
                     title: '成功',
@@ -292,6 +332,11 @@ const confirmReportHandler = () => {
                 reportForm.reason = ''
             })
         })
+    } else {
+        ElNotification.error({
+            title: '错误',
+            message: '请填写举报理由！'
+        })
     }
 
 }
@@ -299,12 +344,19 @@ const cancelReportHandler = () => {
     if (reportForm.reason.trim() !== '') {
         ElMessageBox.confirm('确定关闭么？未提交的内容将丢失！', '提示', {
         }).then(() => {
+            ElNotification.warning({
+                title: '提示',
+                message: '操作取消！'
+            })
             reportFormVisible.value = false
             reportForm.reason = ''
+
         }).catch(() => {
-            // 取消操作
             return
         })
+    } else {
+        reportFormVisible.value = false
+        reportForm.reason = ''
     }
 }
 
@@ -322,7 +374,6 @@ const confirmReplayHandler = async () => {
     const messageId = messageData.value?.id
     const parentId = replayParentId.value
     const content = replayForm.content
-
 
     if (replayForm.content.trim() !== '') {
         await post('/api/replies', { messageId, parentId, content }).then(async () => {
@@ -349,6 +400,8 @@ const cancelReplayHandler = () => {
             return
         })
     }
+    replayFormVisible.value = false
+    replayParentId.value = null
 }
 
 </script>

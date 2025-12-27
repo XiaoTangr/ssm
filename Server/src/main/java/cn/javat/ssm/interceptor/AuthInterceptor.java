@@ -12,6 +12,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 登录校验拦截器
@@ -21,27 +22,29 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
 
-    // 免登录路径集合
-    private static final Set<String> EXCLUDE_PATHS = new HashSet<>();
-    
-    // 免登录路径前缀集合
-    private static final Set<String> EXCLUDE_PREFIXES = new HashSet<>();
-    
-    // 免登录的正则表达式路径模式
-    private static final Set<String> EXCLUDE_PATTERNS = new HashSet<>();
+    /*    构建如下的放行集合，包含通配符支持
+        [{"POST","/users/register"},{"POST","/users/login"},...]
+
+        其中 第一项为请求方法，第二项为请求路径
+        请求方法中 * 表示任意方法，请求地址使用正则表达式
+     */
+    private static final Set<String[]> ALLOW_PATHS = new HashSet<>();
 
     static {
-        // 完全匹配的免登录路径
-        EXCLUDE_PATHS.add("/api/users/register");
-        EXCLUDE_PATHS.add("/api/users/login");
-        EXCLUDE_PATHS.add("/api/messages");
-        EXCLUDE_PATHS.add("/api/users/reset");
-        
-        // 前缀匹配的免登录路径
-        EXCLUDE_PREFIXES.add("/api/messages/");
-        
-        // 正则表达式匹配的免登录路径
-        EXCLUDE_PATTERNS.add("/api/messages/\\d+/replies"); // 查询留言回复
+        // 放行测试：全部方法和全部路径
+        ALLOW_PATHS.add(new String[]{"*", "/test/*"});
+        // user
+        ALLOW_PATHS.add(new String[]{"POST", "/users/register"});
+        ALLOW_PATHS.add(new String[]{"POST", "/users/login"});
+        ALLOW_PATHS.add(new String[]{"POST", "/users/reset"});
+        ALLOW_PATHS.add(new String[]{"GET", "/users/test"});
+        // message
+        ALLOW_PATHS.add(new String[]{"GET", "/messages"});
+        ALLOW_PATHS.add(new String[]{"GET", "/messages/\\d+"});
+        ALLOW_PATHS.add(new String[]{"GET", "/messages/\\d+/replies"}); // 查询留言回复
+        ALLOW_PATHS.add(new String[]{"GET", "/messages/\\d+/like/status"}); // 查询留言点赞状态
+        // admin
+        ALLOW_PATHS.add(new String[]{"GET", "/admin/verify"});
     }
 
     @Autowired
@@ -61,46 +64,54 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         try {
-            String path = request.getServletPath();
-            String method = request.getMethod();
-            
-            // 检查是否在免登录路径集合中
-            if (EXCLUDE_PATHS.contains(path)) {
-                return true;
+            // 获取请求URI并去除上下文路径
+            String requestURI = request.getRequestURI();
+            String contextPath = request.getContextPath();
+
+            // 去除上下文路径，得到相对路径
+            String path = requestURI;
+            if (contextPath != null && !contextPath.isEmpty() && requestURI.startsWith(contextPath)) {
+                path = requestURI.substring(contextPath.length());
             }
-            
-            // 检查是否以免登录路径前缀开头
-            for (String prefix : EXCLUDE_PREFIXES) {
-                if (path.startsWith(prefix)) {
-                    // GET方法且不是需要登录的接口
-                    if ("GET".equals(method) && 
-                        !path.endsWith("/like") && 
-                        !path.endsWith("/like/status") &&
-                        !path.endsWith("/status")) {
-                        return true;
-                    }
-                    // 特殊处理：/api/messages/{messageId} 的GET方法
-                    if ("GET".equals(method) && path.matches("/api/messages/\\d+$")) {
-                        return true;
-                    }
+
+            // 根据web.xml中的servlet映射 /api/*，需要去除/api前缀
+            if (path.startsWith("/api")) {
+                path = path.substring(4); // 去除/api
+                if (path.isEmpty()) {
+                    path = "/";
                 }
             }
-            
-            // 检查是否匹配免登录的正则表达式模式
-            for (String pattern : EXCLUDE_PATTERNS) {
-                if (path.matches(pattern)) {
+
+            String method = request.getMethod();
+
+            System.out.printf("%s : %s \n", method, path);
+
+            // 检查是否在放行路径集合中
+            for (String[] allowPath : ALLOW_PATHS) {
+                String allowMethod = allowPath[0];
+                String allowPattern = allowPath[1];
+
+                // 检查方法是否匹配（* 表示任意方法）
+                boolean methodMatch = allowMethod.equals("*") || allowMethod.equalsIgnoreCase(method);
+
+                // 检查路径是否匹配
+                boolean pathMatch = path.equals(allowPattern) ||
+                        Pattern.matches(convertToRegex(allowPattern), path);
+
+                if (methodMatch && pathMatch) {
+                    System.out.println("路径 " + path + " 已被放行");
                     return true;
                 }
             }
-            
+
             String token = request.getHeader("Authorization");
             if (token == null || token.isEmpty()) {
-//                返回HttpBody错误信息而不是SendError
+                // 返回HttpBody错误信息而不是SendError
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write(HttpBody.unauthorized().toString());
                 return false;
             }
-//            去除Bearer前缀
+            // 去除Bearer前缀
             token = token.replace("Bearer ", "");
             Claims claims = jwtUtil.validateToken(token);
             if (claims == null) {
@@ -111,11 +122,26 @@ public class AuthInterceptor implements HandlerInterceptor {
             response.setHeader("Authorization", "Bearer " + jwtUtil.refreshToken(token));
             return true;
         } catch (Exception e) {
-//            发送服务器错误响应
+            // 发送服务器错误响应
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write(HttpBody.bad().code(500).msg("服务器内部错误").toString());
             return false;
         }
     }
 
+    /**
+     * 将路径模式转换为正则表达式
+     *
+     * @param pattern 路径模式
+     * @return 对应的正则表达式
+     */
+    private String convertToRegex(String pattern) {
+        // 将路径中的通配符转换为正则表达式
+        String regex = pattern
+                .replace("\\", "\\\\")  // 转义反斜杠
+                .replace(".", "\\.")
+                .replace("*", ".*");    // 将*转换为.*
+
+        return "^" + regex + "$";   // 确保完全匹配
+    }
 }

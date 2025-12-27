@@ -159,7 +159,7 @@
     <!-- 更新留言状态 -->
     <update id="updateStatus">
         UPDATE `message`
-        SET `status` = #{status}, `update_time` = #{updateTime}
+        SET `status` = #{status}, `update_time` = NOW()
         WHERE `id` = #{id} AND `is_deleted` = 0
     </update>
 

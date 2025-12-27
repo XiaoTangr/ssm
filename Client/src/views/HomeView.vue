@@ -11,7 +11,16 @@
                 <div class="list-container">
                     <el-card class="message-item-card" v-for="item in messageList">
                         <template #header>
-                            {{ item.title }}
+                            <div style="display: flex; justify-content: space-between;align-items: center;">
+                                <div>
+                                    <h4>{{ item.title }}</h4>
+                                    <el-text>发布者：{{ item.creatorId }} </el-text>
+                                </div>
+                                <div>
+                                    <el-text> 发布于 {{ formatDateTime(item.createTime ?? 0) }}</el-text><br>
+                                    <el-text> 更新于 {{ formatDateTime(item.updateTime ?? 0) }}</el-text>
+                                </div>
+                            </div>
                         </template>
                         <template #default>
                             <!-- 展示留言内容前30个字 -->
@@ -43,7 +52,7 @@
                         </template>
                         <template #footer>
                             <div class="userinfo-footer">
-                                <el-button v-if="currentUser?.role && currentUser?.role > 0" type="primary"
+                                <el-button v-if="currentUser?.role && currentUser?.role == 1" type="primary"
                                     @click="adminHandler()">管理面板</el-button>
                                 <el-button type="danger" @click="logoutHandler()">退出登录</el-button>
                             </div>
@@ -59,14 +68,13 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
 import HeartIcon from '@/components/icon/HeartIcon.vue';
 import type { Message } from '@/core/entity/dbEntities';
-import { get } from '@/core/util';
+import { formatDateTime, formatTime, get } from '@/core/util';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { Edit, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';

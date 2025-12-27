@@ -11,11 +11,7 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
-    <!-- 扫描 Interceptor 拦截器层 -->
-    <context:component-scan base-package="cn.javat.ssm.interceptor"/>
-
-    <!-- 扫描 Util 工具类组件 -->
-    <context:component-scan base-package="cn.javat.ssm.util"/>
+    <context:component-scan base-package="cn.javat.ssm"/>
 
     <!-- 配置拦截器 -->
     <mvc:interceptors>
@@ -23,9 +19,6 @@
         <bean class="cn.javat.ssm.interceptor.AuthInterceptor"/>
     </mvc:interceptors>
 
-
-    <!-- 扫描 Controller 层 -->
-    <context:component-scan base-package="cn.javat.ssm.controller"/>
 
     <!-- 开启注解驱动，自动注册 JSON 转换器 -->
     <mvc:annotation-driven/>

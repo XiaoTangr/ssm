@@ -9,25 +9,25 @@
         </div>
         <div class="inner-container">
             <el-tabs v-model="activeName" type="card">
+                <el-tab-pane label="举报管理" name="report">
+                    <report-admin></report-admin>
+                </el-tab-pane>
                 <el-tab-pane label="用户管理" name="user">
                     用户管理
                 </el-tab-pane>
                 <el-tab-pane label="留言管理" name="message">
                     留言管理
                 </el-tab-pane>
-                <el-tab-pane label="举报管理" name="report">
-                    举报管理
-                </el-tab-pane>
             </el-tabs>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
+import ReportAdmin from '@/components/admin/ReportAdmin.vue';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router';
-const activeName = ref('user')
+const activeName = ref('report')
 const router = useRouter()
 </script>
 
